@@ -95,6 +95,12 @@ Auth-Passport will supply the following information:
 
 To get started with development, please fork this repository and make your desired changes. Please note that we do all our dev work on bitbucket, so while you may submit pull requests on github, we will only push releases to github once they are finished.
 
+### Testing
+
+This module is covered by tests that are run against the latest supported version of `deployd`.
+The latest build on `master`: [![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/s/master "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
+The latest build on `develop`: [![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/s/develop "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
+
 ### Credits
 
 We'd like to thank Passport for building this amazing auth-framework!
