@@ -14,8 +14,7 @@ build:
 
     - script:
         name: export MONGODB_URI
-        code: |
-          export MONGODB_URI="mongodb://${MONGO_PORT_27017_TCP_ADDR}:${MONGO_PORT_27017_TCP_PORT}/db"
+        code: export MONGODB_URI="mongodb://${MONGO_PORT_27017_TCP_ADDR}:${MONGO_PORT_27017_TCP_PORT}/db"
 
     # this is needed so that you can run `wercker build` locally (where node_modules is copied over)
     - script:
@@ -26,5 +25,16 @@ build:
 
     # A step that executes `npm install` command
     - npm-install
+
+    # setup the test environment
+    - script:
+        name: npm pre-test
+        code: npm run-script pre-test
+
     # A step that executes `npm test` command
     - npm-test
+
+    # cleanup the test environment
+    - script:
+        name: npm post-test
+        code: npm run-script post-test

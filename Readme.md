@@ -98,8 +98,14 @@ To get started with development, please fork this repository and make your desir
 ### Testing
 
 This module is covered by tests that are run against the latest supported version of `deployd`.
-The latest build on `master`: [![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/s/master "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
-The latest build on `develop`: [![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/s/develop "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
+
+The latest build on `master`:
+
+[![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/m/master "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
+
+The latest build on `develop`:
+
+[![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/m/develop "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
 
 ### Credits
 

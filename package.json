@@ -4,9 +4,10 @@
   "description": "Passport for deployd",
   "main": "index.js",
   "scripts": {
-    "test": "cd testapp/ && npm install && cd .. && mocha -R spec && rm -r ./testapp/node_modules/dpd-passport",
+    "test": "mocha -R spec",
     "devtest": "mocha -R spec -w",
-    "preparetest": "cd testapp/ && npm install && cd .."
+    "pre-test": "cd testapp/ && npm install && cd ..",
+    "post-test": "rm -r ./testapp/node_modules/dpd-passport"
   },
   "repository": {
     "type": "git",
