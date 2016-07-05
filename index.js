@@ -12,6 +12,7 @@ var Resource = require('deployd/lib/resource'),
     FacebookStrategy = require('passport-facebook').Strategy,
     GitHubStrategy = require('passport-github').Strategy,
     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
+    GoogleTokenStrategy = require('passport-google-token').Strategy,
     DribbbleStrategy = require('passport-dribbble').Strategy,
     WeiboStrategy = require('passport-weibo').Strategy,
 
@@ -43,6 +44,7 @@ function AuthResource() {
     config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowGoogleToken = config.allowGoogleToken && config.baseURL && config.googleClientId && config.googleClientSecret;
     config.allowDribbble = config.allowDribbble && config.baseURL && config.dribbbbleClientId && config.dribbbbleClientSecret;
     config.allowWeibo = config.allowWeibo && config.baseURL && config.weiboClientId && config.weiboClientSecret;
 }
@@ -65,7 +67,7 @@ AuthResource.prototype.initPassport = function() {
     // Will be called when socialLogins are done
     // Check for existing user and update
     // or create new user and insert
-    var socialAuthCallback = function(token, tokenSecret, profile, done) {
+    var socialAuthCallback = function(token, tokenSecret, profile, done) { // tokenSecret may be the refresh token for token-based login (google-token)
         debug('Login callback - profile: %j', profile);
 
         userCollection.store.first({socialAccountId: String(profile.id)}, function(err, user) {
@@ -195,6 +197,18 @@ AuthResource.prototype.initPassport = function() {
             clientID: config.googleClientId,
             clientSecret: config.googleClientSecret,
             callbackURL: cbURL
+          },
+
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowGoogleToken) {
+
+        debug('Initializing Google Token Login');
+        passport.use(new GoogleTokenStrategy({
+            clientID: config.googleClientId,
+            clientSecret: config.googleClientSecret
           },
 
           socialAuthCallback
@@ -339,6 +353,12 @@ AuthResource.prototype.handle = function(ctx, next) {
                 options.scope = this.config.googleScope || 'profile email';
             }
             break;
+        case 'google-token':
+            if(this.config.allowGoogleToken) {
+                requestedModule = 'google-token';
+                options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
         case 'dribbble':
             if(this.config.allowDribbble) {
                 requestedModule = 'dribbble';
@@ -471,6 +491,10 @@ AuthResource.basicDashboard = {
     name        : 'allowGoogle',
     type        : 'checkbox',
     description : 'Allow users to login via Google'
+  },{
+    name        : 'allowGoogleToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Google using the auth SDKs for smart phones (does not use website redirection)'
   },{
     name        : 'allowDribbble',
     type        : 'checkbox',
