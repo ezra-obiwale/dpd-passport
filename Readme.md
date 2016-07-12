@@ -6,6 +6,7 @@ Currently, the following methods are supported for authentification:
 * **local** (i.e. username + password) - ONLY HTTP-POST METHOD
 * **Twitter** (using Api v1.1)
 * **Facebook** (using OAuth)
+* **Facebook-Token** (using OAuth)
 * **GitHub**
 * **Google**
 * **Google Token**
@@ -84,7 +85,7 @@ Also You can use `/auth/login` to login on local user collection but it has to b
 
 ### OAuth Token Login
 
-Using OAuth token based logins is a bit different (using `google-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
+Using OAuth token based logins is a bit different (using `google-token` or `facebook-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
 Login by sending the `access_token` in the body, header or even as a query parameter of the request.
 Example POST `auth/google-token`: 
 
@@ -92,7 +93,7 @@ Example POST `auth/google-token`:
 { "access_token": "ys29.Xi8WSygtT..."}
 ```
 Note that there must not be a `Bearer` prefix for the token.
-Also note that `google-token` uses the existing configuration that `google` uses.
+Also note that `google-token` and `facebook-token` use the existing configuration from their regular version.
 
 ### Usage in Mobile Apps
 

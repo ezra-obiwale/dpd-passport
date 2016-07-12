@@ -10,6 +10,7 @@ var Resource = require('deployd/lib/resource'),
     LocalStrategy = require('passport-local').Strategy,
     TwitterStrategy = require('passport-twitter').Strategy,
     FacebookStrategy = require('passport-facebook').Strategy,
+    FacebookTokenStrategy = require('passport-facebook-token'),
     GitHubStrategy = require('passport-github').Strategy,
     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
     GoogleTokenStrategy = require('passport-google-token').Strategy,
@@ -42,6 +43,7 @@ function AuthResource() {
 
     config.allowTwitter = config.allowTwitter && config.baseURL && config.twitterConsumerKey && config.twitterConsumerSecret;
     config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
+    config.allowFacebookToken = config.allowFacebookToken && config.baseURL && config.facebookAppId && config.facebookAppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
     config.allowGoogleToken = config.allowGoogleToken && config.baseURL && config.googleClientId && config.googleClientSecret;
@@ -171,6 +173,18 @@ AuthResource.prototype.initPassport = function() {
             clientSecret: config.facebookAppSecret,
             profileFields: ['id', 'displayName', 'photos', 'emails'],
             callbackURL: cbURL
+          },
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowFacebookToken) {
+
+        debug('Initializing Facebook Token Login');
+        passport.use(new FacebookTokenStrategy({
+            clientID: config.facebookAppId,
+            clientSecret: config.facebookAppSecret,
+            profileFields: ['id', 'displayName', 'photos', 'emails']
           },
           socialAuthCallback
         ));
@@ -335,6 +349,18 @@ AuthResource.prototype.handle = function(ctx, next) {
                 }
             }
             break;
+        case 'facebook-token':
+            if(this.config.allowFacebookToken) {
+                requestedModule = 'facebook-token';
+                if(this.config.facebookScope) {
+                    try {
+                        options.scope = JSON.parse(this.config.facebookScope);
+                    } catch(ex) {
+                        debug('Error parsing the facebookScope');
+                    }
+                }
+            }
+            break;
         case 'github':
             if(this.config.allowGitHub) {
                 requestedModule = 'github';
@@ -484,6 +510,10 @@ AuthResource.basicDashboard = {
     type        : 'checkbox',
     description : 'Allow users to login via Facebook (requires Facebook Id and Secret!)'
   },{
+    name        : 'allowFacebookToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Facebook using the auth SDKs for smart phones (requires Facebook Id and Secret and does not use website redirection)'
+  },{
     name        : 'allowGitHub',
     type        : 'checkbox',
     description : 'Allow users to login via GitHub (requires GitHub Id and Secret!)'
@@ -513,12 +543,10 @@ AuthResource.basicDashboard = {
     description : 'TWITTER_CONSUMER_SECRET'*/
   },{
     name        : 'facebookAppId',
-    type        : 'text'/*,
-    description : 'TWITTER_CONSUMER_KEY'*/
+    type        : 'text'
   }, {
     name        : 'facebookAppSecret',
-    type        : 'text'/*,
-    description : 'TWITTER_CONSUMER_SECRET'*/
+    type        : 'text'
   }, {
     name        : 'facebookScope',
     type        : 'text',
