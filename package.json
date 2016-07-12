@@ -25,10 +25,12 @@
   "author": "Fabian Off, simpleTechs.net <fabian@simpletechs.net>",
   "license": "FreeBSD",
   "dependencies": {
+    "debug": "^0.7.4",
     "passport-local": "^1.0.0",
     "passport": "^0.2.0",
     "passport-facebook": "^1.0.3",
     "passport-google-oauth": "^0.1.5",
+    "passport-google-token": "^0.1.2",
     "passport-twitter": "^1.0.2",
     "debug": "^0.7.4",
     "passport-github": "^0.1.5",

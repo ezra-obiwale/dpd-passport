@@ -8,6 +8,7 @@ Currently, the following methods are supported for authentification:
 * **Facebook** (using OAuth)
 * **GitHub**
 * **Google**
+* **Google Token**
 * **Dribbble**
 * **Weibo**
 
@@ -80,6 +81,18 @@ Point your users to `/auth/{login,twitter,facebook,github,google,dribble,weibo}`
 After that, Auth-Passport completely takes over and redirects the users according to the OAuth(2) flow.
 
 Also You can use `/auth/login` to login on local user collection but it has to be POST method.
+
+### OAuth Token Login
+
+Using OAuth token based logins is a bit different (using `google-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
+Login by sending the `access_token` in the body, header or even as a query parameter of the request.
+Example POST `auth/google-token`: 
+
+```json
+{ "access_token": "ys29.Xi8WSygtT..."}
+```
+Note that there must not be a `Bearer` prefix for the token.
+Also note that `google-token` uses the existing configuration that `google` uses.
 
 ### Usage in Mobile Apps
 
