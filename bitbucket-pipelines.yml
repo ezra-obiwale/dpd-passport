@@ -1,0 +1,22 @@
+image: simpletechs/alpine-node-mongo:latest
+
+pipelines:
+  default:
+    - step:
+        script:
+          - export NODE_ENV='development'
+          - export PATH=$PATH:./node_modules/.bin
+          - export MONGODB_URI="mongodb://localhost:27017/db"
+          - /bin/mongod-deamon
+          - npm --version
+          - npm install
+          - npm run-script pre-test
+          - npm test
+          - npm run-script post-test
+  # branches:
+  #   master:
+  #     - step:
+  #         script:
+  #           - npm --version
+  #           - npm install
+  #           - gulp --type production deploy # note: this must only be run on master!

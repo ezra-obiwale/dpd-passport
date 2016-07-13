@@ -111,6 +111,10 @@ Auth-Passport will supply the following information:
 
 To get started with development, please fork this repository and make your desired changes. Please note that we do all our dev work on bitbucket, so while you may submit pull requests on github, we will only push releases to github once they are finished.
 
+### Testing
+
+This module is covered by tests that are run against the latest supported version of `deployd` (0.8.4 currently).
+
 ### Credits
 
 We'd like to thank Passport for building this amazing auth-framework!

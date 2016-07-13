@@ -4,7 +4,10 @@
   "description": "Passport for deployd",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -R spec",
+    "devtest": "mocha -R spec -w",
+    "pretest": "cd testapp/ && npm install && cd ..",
+    "posttest": "rm -r ./testapp/node_modules/dpd-passport"
   },
   "repository": {
     "type": "git",
@@ -36,5 +39,10 @@
     "passport-github": "^0.1.5",
     "passport-dribbble": "^1.0.1",
     "passport-weibo": "^0.1.2"
+  },
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "mocha": "^2.2.5",
+    "supertest": "^1.0.1"
   }
 }
