@@ -12,6 +12,9 @@ var Resource = require('deployd/lib/resource'),
     FacebookStrategy = require('passport-facebook').Strategy,
     GitHubStrategy = require('passport-github').Strategy,
     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
+    GoogleTokenStrategy = require('passport-google-token').Strategy,
+    DribbbleStrategy = require('passport-dribbble').Strategy,
+    WeiboStrategy = require('passport-weibo').Strategy,
 
     // Globals
     DEFAULT_SALT_LEN = 256,
@@ -41,6 +44,9 @@ function AuthResource() {
     config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowGoogleToken = config.allowGoogleToken && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowDribbble = config.allowDribbble && config.baseURL && config.dribbbbleClientId && config.dribbbbleClientSecret;
+    config.allowWeibo = config.allowWeibo && config.baseURL && config.weiboClientId && config.weiboClientSecret;
 }
 util.inherits(AuthResource, Resource);
 
@@ -61,10 +67,10 @@ AuthResource.prototype.initPassport = function() {
     // Will be called when socialLogins are done
     // Check for existing user and update
     // or create new user and insert
-    var socialAuthCallback = function(token, tokenSecret, profile, done) {
+    var socialAuthCallback = function(token, tokenSecret, profile, done) { // tokenSecret may be the refresh token for token-based login (google-token)
         debug('Login callback - profile: %j', profile);
 
-        userCollection.store.first({socialAccountId: profile.id}, function(err, user) {
+        userCollection.store.first({socialAccountId: String(profile.id)}, function(err, user) {
             if(err) { return done(err); }
 
             // we need to fake the password here, because deployd will force us to on create
@@ -75,7 +81,7 @@ AuthResource.prototype.initPassport = function() {
                 },
                 saveUser = user || {
                     // these properties will only be set on first insert
-                    socialAccountId: profile.id,
+                    socialAccountId: String(profile.id),
                     socialAccount: profile.provider,
                     name: profile.displayName,
                     username: fakeLogin.username,
@@ -163,6 +169,7 @@ AuthResource.prototype.initPassport = function() {
         passport.use(new FacebookStrategy({
             clientID: config.facebookAppId,
             clientSecret: config.facebookAppSecret,
+            profileFields: ['id', 'displayName', 'photos', 'emails'],
             callbackURL: cbURL
           },
           socialAuthCallback
@@ -192,6 +199,44 @@ AuthResource.prototype.initPassport = function() {
             callbackURL: cbURL
           },
 
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowGoogleToken) {
+
+        debug('Initializing Google Token Login');
+        passport.use(new GoogleTokenStrategy({
+            clientID: config.googleClientId,
+            clientSecret: config.googleClientSecret
+          },
+
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowDribbble) {
+        var cbURL = url.resolve(config.baseURL, this.path + '/dribbble/' + CALLBACK_URL);
+
+        debug('Initializing Dribbble Login, cb: %s', cbURL);
+        passport.use(new DribbbleStrategy({
+            clientID: config.dribbbbleClientId,
+            clientSecret: config.dribbbbleClientSecret,
+            callbackURL: cbURL
+          },
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowWeibo) {
+        var cbURL = url.resolve(config.baseURL, this.path + '/weibo/' + CALLBACK_URL);
+
+        debug('Initializing Weibo Login, cb: %s', cbURL);
+        passport.use(new WeiboStrategy({
+            clientID: config.weiboClientId,
+            clientSecret: config.weiboClientSecret,
+            callbackURL: cbURL
+          },
           socialAuthCallback
         ));
     }
@@ -306,6 +351,22 @@ AuthResource.prototype.handle = function(ctx, next) {
             if(this.config.allowGoogle) {
                 requestedModule = 'google';
                 options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
+        case 'google-token':
+            if(this.config.allowGoogleToken) {
+                requestedModule = 'google-token';
+                options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
+        case 'dribbble':
+            if(this.config.allowDribbble) {
+                requestedModule = 'dribbble';
+            }
+            break;
+        case 'weibo':
+            if(this.config.allowWeibo) {
+                requestedModule = 'weibo';
             }
             break;
         default:
@@ -431,6 +492,18 @@ AuthResource.basicDashboard = {
     type        : 'checkbox',
     description : 'Allow users to login via Google'
   },{
+    name        : 'allowGoogleToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Google using the auth SDKs for smart phones (does not use website redirection)'
+  },{
+    name        : 'allowDribbble',
+    type        : 'checkbox',
+    description : 'Allow users to login via Dribbble'
+  },{
+    name        : 'allowWeibo',
+    type        : 'checkbox',
+    description : 'Allow users to login via Weibo'
+  }, {
     name        : 'twitterConsumerKey',
     type        : 'text'/*,
     description : 'TWITTER_CONSUMER_KEY'*/
@@ -472,6 +545,17 @@ AuthResource.basicDashboard = {
     name        : 'googleScope',
     type        : 'text',
     description : 'defaults to "profile email"'
-  }
-  ]
+  } ,{
+    name        : 'dribbbbleClientId',
+    type        : 'text'
+  }, {
+    name        : 'dribbbbleClientSecret',
+    type        : 'text'
+  } ,{
+    name        : 'weiboClientId',
+    type        : 'text'
+  }, {
+    name        : 'weiboClientSecret',
+    type        : 'text'
+  }]
 };

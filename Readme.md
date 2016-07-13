@@ -8,6 +8,10 @@ Currently, the following methods are supported for authentification:
 * **Facebook** (using OAuth)
 * **GitHub**
 * **Google**
+* **Google Token**
+* **Dribbble**
+* **Weibo**
+
 
 Others can be implemented easily if Passport supports them.
 
@@ -73,14 +77,26 @@ Note: You may supply the baseURL (your website's root) via the environment varia
 
 ### Usage
 
-Point your users to `/auth/{twitter,facebook,github,google}` to have them login (or signup) via the specified module.
+Point your users to `/auth/{login,twitter,facebook,github,google,dribble,weibo}` to have them login (or signup) via the specified module.
 After that, Auth-Passport completely takes over and redirects the users according to the OAuth(2) flow.
 
 Also You can use `/auth/login` to login on local user collection but it has to be POST method.
 
+### OAuth Token Login
+
+Using OAuth token based logins is a bit different (using `google-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
+Login by sending the `access_token` in the body, header or even as a query parameter of the request.
+Example POST `auth/google-token`: 
+
+```json
+{ "access_token": "ys29.Xi8WSygtT..."}
+```
+Note that there must not be a `Bearer` prefix for the token.
+Also note that `google-token` uses the existing configuration that `google` uses.
+
 ### Usage in Mobile Apps
 
-Auth-Passport was built with usage in mobile Apps in mind. From inside your mobile app, open a browser and point the user to your website's `/auth/{login,twitter,facebook,github}` endpoint. From there, Auth-Passport will take over and guide (i.e. redirect) your user through the different steps needed for each provider, until the user has authorized your app and logged in successfully.
+Auth-Passport was built with usage in mobile Apps in mind. From inside your mobile app, open a browser and point the user to your website's `/auth/{login,twitter,facebook,github,google,dribble,weibo}` endpoint. From there, Auth-Passport will take over and guide (i.e. redirect) your user through the different steps needed for each provider, until the user has authorized your app and logged in successfully.
 
 Now you can get hold of your user and his session, by specifying a `redirectURL` in the original request. After the login is done (no matter if it was successful or not), your user will be redirected to the specified URL.
 Supply some app-specific URL (see your platform's SDK on how that looks) and catch the response in your app.
@@ -97,15 +113,7 @@ To get started with development, please fork this repository and make your desir
 
 ### Testing
 
-This module is covered by tests that are run against the latest supported version of `deployd`.
-
-The latest build on `master`:
-
-[![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/m/master "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
-
-The latest build on `develop`:
-
-[![wercker status](https://app.wercker.com/status/93e27ffdfc1b1ca408174c6d27c73120/m/develop "wercker status")](https://app.wercker.com/project/bykey/93e27ffdfc1b1ca408174c6d27c73120)
+This module is covered by tests that are run against the latest supported version of `deployd` (0.8.4 currently).
 
 ### Credits
 
@@ -120,3 +128,6 @@ The following people contributed some of there valuable spare time to make this 
 * [Tristan](https://github.com/tmcnab)
 * [Andy](https://github.com/hongkongkiwi)
 * [Andrei](https://github.com/andreialecu)
+* [Burak](https://github.com/burakcan)
+* [Mathis](https://github.com/Maddis1337)
+* [Dave](https://github.com/flavordaaave)
