@@ -6,8 +6,8 @@
   "scripts": {
     "test": "mocha -R spec",
     "devtest": "mocha -R spec -w",
-    "pre-test": "cd testapp/ && npm install && cd ..",
-    "post-test": "rm -r ./testapp/node_modules/dpd-passport"
+    "pretest": "cd testapp/ && npm install && cd ..",
+    "posttest": "rm -r ./testapp/node_modules/dpd-passport"
   },
   "repository": {
     "type": "git",
