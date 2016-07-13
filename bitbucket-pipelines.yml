@@ -10,9 +10,7 @@ pipelines:
           - /bin/mongod-deamon
           - npm --version
           - npm install
-          - npm run-script pre-test
           - npm test
-          - npm run-script post-test
   # branches:
   #   master:
   #     - step:
