@@ -97,7 +97,7 @@ Note that there must not be a `Bearer` prefix for the token.
 Also note that `google-token` and `facebook-token` use the existing configuration from their regular version.
 
 # Google Id-Token login
-The login using Googles Id-Token system is similar to OAuth, but the JSON body of requests need to contain the property `id_token` with the corresponding token resolved using Googles Signin SDK.
+The login using Googles Id-Token system is similar to OAuth, but the JSON body of requests needs to contain the property `id_token` with the corresponding token resolved using Googles Signin SDK.
 
 ### Usage in Mobile Apps
 
