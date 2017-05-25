@@ -44,7 +44,7 @@ function AuthResource() {
     config.usersCollection = config.usersCollection || DEFAULT_USERS_COLLECTION;
 
     config.allowTwitter = config.allowTwitter && config.baseURL && config.twitterConsumerKey && config.twitterConsumerSecret;
-    config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;AppSecret;
+    config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
     config.allowGoogleIdToken = config.allowGoogleIdToken && config.baseURL && config.googleClientId && config.googleClientSecret;
