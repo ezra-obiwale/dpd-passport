@@ -5,14 +5,17 @@ Currently, the following methods are supported for authentification:
 
 * **local** (i.e. username + password) - ONLY HTTP-POST METHOD
 * **Twitter** (using Api v1.1)
+* **Twitter Token**
 * **Facebook** (using OAuth)
 * **Facebook-Token** (using OAuth)
 * **GitHub**
+* **GitHub Token**
 * **Google**
 * **Google Token**
 * **Google Id-Token**
 * **Dribbble**
 * **Weibo**
+* **Weibo Token**
 
 
 Others can be implemented easily if Passport supports them.
@@ -84,21 +87,6 @@ After that, Auth-Passport completely takes over and redirects the users accordin
 
 Also You can use `/auth/login` to login on local user collection but it has to be POST method.
 
-### OAuth Token Login
-
-Using OAuth token based logins is a bit different (using `google-token` or `facebook-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
-Login by sending the `access_token` in the body, header or even as a query parameter of the request.
-Example POST `auth/google-token`: 
-
-```json
-{ "access_token": "ys29.Xi8WSygtT..."}
-```
-Note that there must not be a `Bearer` prefix for the token.
-Also note that `google-token` and `facebook-token` use the existing configuration from their regular version.
-
-# Google Id-Token login
-The login using Googles Id-Token system is similar to OAuth, but the JSON body of requests needs to contain the property `id_token` with the corresponding token resolved using Googles Signin SDK.
-
 ### Usage in Mobile Apps
 
 Auth-Passport was built with usage in mobile Apps in mind.
@@ -108,7 +96,7 @@ Auth-Passport was built with usage in mobile Apps in mind.
     Now you can get hold of your user and his session, by specifying a `redirectURL` in the original request. After the login is done (no matter if it was successful or not), your user will be redirected to the specified URL.
     Supply some app-specific URL (see your platform's SDK on how that looks) and catch the response in your app.
 
-2.  Alternatively, authenticate the user with the appropriate SDK and send to a request with the received access token as follows:
+2.  Alternatively, authenticate the user with the appropriate OAUTH SDK and send  a request with the received access token as follows:
     ````
     GET /auth/facebook/token?access_token=<TOKEN_HERE>
     ````
@@ -134,6 +122,12 @@ Auth-Passport was built with usage in mobile Apps in mind.
     ````
 
     **NOTE**: Facebook can easily be interchanged with any of Google, Github, Twitter and Weibo.
+
+**Google Id-Token login**
+
+The login using Googles Id-Token system is similar to OAuth, but the JSON body of requests needs to contain the property `id_token` with the corresponding token resolved using Googles Signin SDK.
+
+**Response**
 
 Auth-Passport will supply the following information:
 
