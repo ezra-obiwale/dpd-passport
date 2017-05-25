@@ -101,10 +101,40 @@ The login using Googles Id-Token system is similar to OAuth, but the JSON body o
 
 ### Usage in Mobile Apps
 
-Auth-Passport was built with usage in mobile Apps in mind. From inside your mobile app, open a browser and point the user to your website's `/auth/{login,twitter,facebook,github,google,dribble,weibo}` endpoint. From there, Auth-Passport will take over and guide (i.e. redirect) your user through the different steps needed for each provider, until the user has authorized your app and logged in successfully.
+Auth-Passport was built with usage in mobile Apps in mind.
 
-Now you can get hold of your user and his session, by specifying a `redirectURL` in the original request. After the login is done (no matter if it was successful or not), your user will be redirected to the specified URL.
-Supply some app-specific URL (see your platform's SDK on how that looks) and catch the response in your app.
+1.  From inside your mobile app, open a browser and point the user to your website's `/auth/{login,twitter,facebook,github,google,dribble,weibo}` endpoint. From there, Auth-Passport will take over and guide (i.e. redirect) your user through the different steps needed for each provider, until the user has authorized your app and logged in successfully.
+
+    Now you can get hold of your user and his session, by specifying a `redirectURL` in the original request. After the login is done (no matter if it was successful or not), your user will be redirected to the specified URL.
+    Supply some app-specific URL (see your platform's SDK on how that looks) and catch the response in your app.
+
+2.  Alternatively, authenticate the user with the appropriate SDK and send to a request with the received access token as follows:
+    ````
+    GET /auth/facebook/token?access_token=<TOKEN_HERE>
+    ````
+    or in the header like so:
+    ````
+    GET /auth/facebook/token HTTP/1.1
+    Host: server.example.com
+    Authorization: Bearer base64_access_token_string
+    ````
+    or
+    ````
+    GET /auth/facebook/token HTTP/1.1
+    Host: server.example.com
+    access_token: Bearer base64_access_token_string
+    ````    
+
+    Optionally, the access token can be transmitted via post:
+    ````
+    POST /auth/facebook/token HTTP/1.1
+    Host: server.example.com
+
+    access_token=base64_access_token_string
+    ````
+
+    **NOTE**: Facebook can easily be interchanged with any of Google, Github, Twitter and Weibo.
+
 Auth-Passport will supply the following information:
 
 * **sid** (String) Session ID in deployd, send this in every subsequent request
