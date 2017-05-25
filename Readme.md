@@ -6,8 +6,11 @@ Currently, the following methods are supported for authentification:
 * **local** (i.e. username + password) - ONLY HTTP-POST METHOD
 * **Twitter** (using Api v1.1)
 * **Facebook** (using OAuth)
+* **Facebook-Token** (using OAuth)
 * **GitHub**
 * **Google**
+* **Google Token**
+* **Google Id-Token**
 * **Dribbble**
 * **Weibo**
 
@@ -81,6 +84,21 @@ After that, Auth-Passport completely takes over and redirects the users accordin
 
 Also You can use `/auth/login` to login on local user collection but it has to be POST method.
 
+### OAuth Token Login
+
+Using OAuth token based logins is a bit different (using `google-token` or `facebook-token`), since the login has to be handled externally, using the SDK of the specifc service. After the user logged in to the external service and gave permission, the SDKs provide an `access token`, which has to be used to authenticate with deployd.
+Login by sending the `access_token` in the body, header or even as a query parameter of the request.
+Example POST `auth/google-token`: 
+
+```json
+{ "access_token": "ys29.Xi8WSygtT..."}
+```
+Note that there must not be a `Bearer` prefix for the token.
+Also note that `google-token` and `facebook-token` use the existing configuration from their regular version.
+
+# Google Id-Token login
+The login using Googles Id-Token system is similar to OAuth, but the JSON body of requests needs to contain the property `id_token` with the corresponding token resolved using Googles Signin SDK.
+
 ### Usage in Mobile Apps
 
 Auth-Passport was built with usage in mobile Apps in mind.
@@ -127,6 +145,10 @@ Auth-Passport will supply the following information:
 ### Development
 
 To get started with development, please fork this repository and make your desired changes. Please note that we do all our dev work on bitbucket, so while you may submit pull requests on github, we will only push releases to github once they are finished.
+
+### Testing
+
+This module is covered by tests that are run against the latest supported version of `deployd` (0.8.4 currently).
 
 ### Credits
 

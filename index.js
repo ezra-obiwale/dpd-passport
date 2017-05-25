@@ -15,6 +15,7 @@ var Resource = require('deployd/lib/resource'),
         GitHubTokenStrategy = require('passport-github-token').Strategy,
         GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
         GoogleTokenStrategy = require('passport-google-token').Strategy,
+        GoogleIdTokenStrategy = require('passport-google-idtoken'),
         DribbbleStrategy = require('passport-dribbble').Strategy,
         WeiboStrategy = require('passport-weibo').Strategy,
         WeiboTokenStrategy = require('passport-weibo-token').Strategy,
@@ -43,9 +44,10 @@ function AuthResource() {
     config.usersCollection = config.usersCollection || DEFAULT_USERS_COLLECTION;
 
     config.allowTwitter = config.allowTwitter && config.baseURL && config.twitterConsumerKey && config.twitterConsumerSecret;
-    config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
+    config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;AppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowGoogleIdToken = config.allowGoogleIdToken && config.baseURL && config.googleClientId && config.googleClientSecret;
     config.allowDribbble = config.allowDribbble && config.baseURL && config.dribbbbleClientId && config.dribbbbleClientSecret;
     config.allowWeibo = config.allowWeibo && config.baseURL && config.weiboClientId && config.weiboClientSecret;
 }
@@ -69,13 +71,18 @@ AuthResource.prototype.initPassport = function (requestedModule) {
     // Will be called when socialLogins are done
     // Check for existing user and update
     // or create new user and insert
-    var socialAuthCallback = function (token, tokenSecret, profile, done) {
+    var socialAuthCallback = function(token, tokenSecret, profile, done) { // tokenSecret may be the refresh token for token-based login (google-token)
         debug('Login callback - profile: %j', profile);
 
-        userCollection.store.first({socialAccountId: String(profile.id)}, function (err, user) {
-            if (err) {
-                return done(err);
-            }
+        if(this.name === 'google-idtoken') { // google-idtoken is not regular OAuth 2.0 flow, we need to work around that
+            profile = token;
+            profile.id = profile.sub;
+            profile.provider = this.name;
+            profile.displayName = profile.name;
+            done = tokenSecret;
+        }
+        userCollection.store.first({socialAccountId: String(profile.id)}, function(err, user) {
+            if(err) { return done(err); }
 
             // we need to fake the password here, because deployd will force us to on create
             // There is no other way around the required checks for username and password.
@@ -231,7 +238,15 @@ AuthResource.prototype.initPassport = function (requestedModule) {
         }
     }
 
-    if (config.allowDribbble) {
+    if(config.allowGoogleIdToken) {
+
+        debug('Initializing Google Id Token Login');
+        passport.use(new GoogleIdTokenStrategy({}, // nothing to declare
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowDribbble) {
         var cbURL = url.resolve(config.baseURL, this.path + '/dribbble/' + CALLBACK_URL);
 
         debug('Initializing Dribbble Login, cb: %s', cbURL);
@@ -380,6 +395,12 @@ AuthResource.prototype.handle = function (ctx, next) {
                 options.scope = this.config.googleScope || 'profile email';
             }
             break;
+        case 'google-idtoken':
+            if(this.config.allowGoogleIdToken) {
+                requestedModule = 'google-idtoken';
+                options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
         case 'dribbble':
             if (this.config.allowDribbble) {
                 requestedModule = 'dribbble';
@@ -517,6 +538,10 @@ AuthResource.basicDashboard = {
             name: 'allowGoogle',
             type: 'checkbox',
             description: 'Allow users to login via Google'
+        }, {
+            name        : 'allowGoogleIdToken',
+            type        : 'checkbox',
+            description : 'Allow users to login via Google Id using the auth SDKs for smart phones (does not use website redirection)'
         }, {
             name: 'allowDribbble',
             type: 'checkbox',
