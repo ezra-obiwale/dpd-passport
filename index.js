@@ -10,8 +10,11 @@ var Resource = require('deployd/lib/resource'),
     LocalStrategy = require('passport-local').Strategy,
     TwitterStrategy = require('passport-twitter').Strategy,
     FacebookStrategy = require('passport-facebook').Strategy,
+    FacebookTokenStrategy = require('passport-facebook-token'),
     GitHubStrategy = require('passport-github').Strategy,
     GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
+    GoogleTokenStrategy = require('passport-google-token').Strategy,
+    GoogleIdTokenStrategy = require('passport-google-idtoken'),
     DribbbleStrategy = require('passport-dribbble').Strategy,
     WeiboStrategy = require('passport-weibo').Strategy,
 
@@ -41,8 +44,11 @@ function AuthResource() {
 
     config.allowTwitter = config.allowTwitter && config.baseURL && config.twitterConsumerKey && config.twitterConsumerSecret;
     config.allowFacebook = config.allowFacebook && config.baseURL && config.facebookAppId && config.facebookAppSecret;
+    config.allowFacebookToken = config.allowFacebookToken && config.baseURL && config.facebookAppId && config.facebookAppSecret;
     config.allowGitHub = config.allowGitHub && config.baseURL && config.githubClientId && config.githubClientSecret;
     config.allowGoogle = config.allowGoogle && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowGoogleToken = config.allowGoogleToken && config.baseURL && config.googleClientId && config.googleClientSecret;
+    config.allowGoogleIdToken = config.allowGoogleIdToken && config.baseURL && config.googleClientId && config.googleClientSecret;
     config.allowDribbble = config.allowDribbble && config.baseURL && config.dribbbbleClientId && config.dribbbbleClientSecret;
     config.allowWeibo = config.allowWeibo && config.baseURL && config.weiboClientId && config.weiboClientSecret;
 }
@@ -65,9 +71,16 @@ AuthResource.prototype.initPassport = function() {
     // Will be called when socialLogins are done
     // Check for existing user and update
     // or create new user and insert
-    var socialAuthCallback = function(token, tokenSecret, profile, done) {
+    var socialAuthCallback = function(token, tokenSecret, profile, done) { // tokenSecret may be the refresh token for token-based login (google-token)
         debug('Login callback - profile: %j', profile);
 
+        if(this.name === 'google-idtoken') { // google-idtoken is not regular OAuth 2.0 flow, we need to work around that
+            profile = token;
+            profile.id = profile.sub;
+            profile.provider = this.name;
+            profile.displayName = profile.name;
+            done = tokenSecret;
+        }
         userCollection.store.first({socialAccountId: String(profile.id)}, function(err, user) {
             if(err) { return done(err); }
 
@@ -174,6 +187,18 @@ AuthResource.prototype.initPassport = function() {
         ));
     }
 
+    if(config.allowFacebookToken) {
+
+        debug('Initializing Facebook Token Login');
+        passport.use(new FacebookTokenStrategy({
+            clientID: config.facebookAppId,
+            clientSecret: config.facebookAppSecret,
+            profileFields: ['id', 'displayName', 'photos', 'emails']
+          },
+          socialAuthCallback
+        ));
+    }
+
     if(config.allowGitHub) {
         var cbURL = url.resolve(config.baseURL, this.path + '/github/' + CALLBACK_URL);
 
@@ -197,6 +222,26 @@ AuthResource.prototype.initPassport = function() {
             callbackURL: cbURL
           },
 
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowGoogleToken) {
+
+        debug('Initializing Google Token Login');
+        passport.use(new GoogleTokenStrategy({
+            clientID: config.googleClientId,
+            clientSecret: config.googleClientSecret
+          },
+
+          socialAuthCallback
+        ));
+    }
+
+    if(config.allowGoogleIdToken) {
+
+        debug('Initializing Google Id Token Login');
+        passport.use(new GoogleIdTokenStrategy({}, // nothing to declare
           socialAuthCallback
         ));
     }
@@ -321,6 +366,18 @@ AuthResource.prototype.handle = function(ctx, next) {
                 }
             }
             break;
+        case 'facebook-token':
+            if(this.config.allowFacebookToken) {
+                requestedModule = 'facebook-token';
+                if(this.config.facebookScope) {
+                    try {
+                        options.scope = JSON.parse(this.config.facebookScope);
+                    } catch(ex) {
+                        debug('Error parsing the facebookScope');
+                    }
+                }
+            }
+            break;
         case 'github':
             if(this.config.allowGitHub) {
                 requestedModule = 'github';
@@ -336,6 +393,18 @@ AuthResource.prototype.handle = function(ctx, next) {
         case 'google':
             if(this.config.allowGoogle) {
                 requestedModule = 'google';
+                options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
+        case 'google-token':
+            if(this.config.allowGoogleToken) {
+                requestedModule = 'google-token';
+                options.scope = this.config.googleScope || 'profile email';
+            }
+            break;
+        case 'google-idtoken':
+            if(this.config.allowGoogleIdToken) {
+                requestedModule = 'google-idtoken';
                 options.scope = this.config.googleScope || 'profile email';
             }
             break;
@@ -464,6 +533,10 @@ AuthResource.basicDashboard = {
     type        : 'checkbox',
     description : 'Allow users to login via Facebook (requires Facebook Id and Secret!)'
   },{
+    name        : 'allowFacebookToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Facebook using the auth SDKs for smart phones (requires Facebook Id and Secret and does not use website redirection)'
+  },{
     name        : 'allowGitHub',
     type        : 'checkbox',
     description : 'Allow users to login via GitHub (requires GitHub Id and Secret!)'
@@ -471,6 +544,14 @@ AuthResource.basicDashboard = {
     name        : 'allowGoogle',
     type        : 'checkbox',
     description : 'Allow users to login via Google'
+  },{
+    name        : 'allowGoogleToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Google using the auth SDKs for smart phones (does not use website redirection)'
+  },{
+    name        : 'allowGoogleIdToken',
+    type        : 'checkbox',
+    description : 'Allow users to login via Google Id using the auth SDKs for smart phones (does not use website redirection)'
   },{
     name        : 'allowDribbble',
     type        : 'checkbox',
@@ -489,12 +570,10 @@ AuthResource.basicDashboard = {
     description : 'TWITTER_CONSUMER_SECRET'*/
   },{
     name        : 'facebookAppId',
-    type        : 'text'/*,
-    description : 'TWITTER_CONSUMER_KEY'*/
+    type        : 'text'
   }, {
     name        : 'facebookAppSecret',
-    type        : 'text'/*,
-    description : 'TWITTER_CONSUMER_SECRET'*/
+    type        : 'text'
   }, {
     name        : 'facebookScope',
     type        : 'text',
