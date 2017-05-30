@@ -1,5 +1,7 @@
 ## Auth-Passport Resource
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ezra-obiwale/dpd-passport.svg)](https://greenkeeper.io/)
+
 This custom resource type allows you to authorize your users using the powerful [Passport](http://passportjs.org).
 Currently, the following methods are supported for authentification:
 
