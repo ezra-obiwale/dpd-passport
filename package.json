@@ -28,17 +28,17 @@
   "author": "Fabian Off, simpleTechs.net <fabian@simpletechs.net>",
   "license": "FreeBSD",
   "dependencies": {
-    "debug": "^0.7.4",
+    "debug": "^2.6.8",
     "passport-local": "^1.0.0",
-    "passport": "^0.2.0",
-    "passport-facebook": "^1.0.3",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
     "passport-facebook-token": "^3.3.0",
-    "passport-google-oauth": "^0.1.5",
+    "passport-google-oauth": "^1.0.0",
     "passport-google-token": "^0.1.2",
     "passport-google-idtoken": "^1.0.2",
     "passport-twitter": "^1.0.2",
-    "debug": "^0.7.4",
-    "passport-github": "^0.1.5",
+    "debug": "^2.6.8",
+    "passport-github": "^1.1.0",
     "passport-dribbble": "^1.0.1",
     "passport-weibo": "^0.1.2",
     "passport-github-token": "^2.1.0",
@@ -47,8 +47,8 @@
     "passport-weibo-token": "^3.0.6"
   },
   "devDependencies": {
-    "chai": "^2.3.0",
-    "mocha": "^2.2.5",
-    "supertest": "^1.0.1"
+    "chai": "^4.0.0",
+    "mocha": "^3.4.2",
+    "supertest": "^3.0.0"
   }
 }
