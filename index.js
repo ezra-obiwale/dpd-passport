@@ -71,18 +71,22 @@ AuthResource.prototype.initPassport = function (requestedModule) {
     // Will be called when socialLogins are done
     // Check for existing user and update
     // or create new user and insert
-    var socialAuthCallback = function(token, tokenSecret, profile, done) { // tokenSecret may be the refresh token for token-based login (google-token)
+    var socialAuthCallback = function (token, tokenSecret, profile,
+            done) { // tokenSecret may be the refresh token for token-based login (google-token)
         debug('Login callback - profile: %j', profile);
 
-        if(this.name === 'google-idtoken') { // google-idtoken is not regular OAuth 2.0 flow, we need to work around that
+        if (this.name === 'google-idtoken') { // google-idtoken is not regular OAuth 2.0 flow, we need to work around that
             profile = token;
             profile.id = profile.sub;
             profile.provider = this.name;
             profile.displayName = profile.name;
             done = tokenSecret;
         }
-        userCollection.store.first({socialAccountId: String(profile.id)}, function(err, user) {
-            if(err) { return done(err); }
+        userCollection.store.first({socialAccountId: String(profile.id)}, function (
+                err, user) {
+            if (err) {
+                return done(err);
+            }
 
             // we need to fake the password here, because deployd will force us to on create
             // There is no other way around the required checks for username and password.
@@ -112,7 +116,8 @@ AuthResource.prototype.initPassport = function (requestedModule) {
                 if (!user.username)
                     update.username = fakeLogin.username;
 
-                userCollection.store.update(user.id, update, function (err, res) {
+                userCollection.store.update(user.id, update, function (err,
+                        res) {
                     debug('updated profile for user');
 
                     done(null, saveUser);
@@ -124,7 +129,8 @@ AuthResource.prototype.initPassport = function (requestedModule) {
                 saveUser.$limitRecursion = 1000;
 
                 // will run deployd post events
-                dpd[config.usersCollection].post(saveUser, function (res, err) {
+                dpd[config.usersCollection].post(saveUser, function (res,
+                        err) {
                     if (err) {
                         return done(err);
                     }
@@ -146,7 +152,8 @@ AuthResource.prototype.initPassport = function (requestedModule) {
     if (config.allowLocal) {
         passport.use(new LocalStrategy(
                 function (username, password, done) {
-                    userCollection.store.first({username: username}, function (err, user) {
+                    userCollection.store.first({username: username}, function (
+                            err, user) {
                         if (err) {
                             return done(err);
                         }
@@ -238,15 +245,15 @@ AuthResource.prototype.initPassport = function (requestedModule) {
         }
     }
 
-    if(config.allowGoogleIdToken) {
+    if (config.allowGoogleIdToken) {
 
         debug('Initializing Google Id Token Login');
         passport.use(new GoogleIdTokenStrategy({}, // nothing to declare
-          socialAuthCallback
-        ));
+                socialAuthCallback
+                ));
     }
 
-    if(config.allowDribbble) {
+    if (config.allowDribbble) {
         var cbURL = url.resolve(config.baseURL, this.path + '/dribbble/' + CALLBACK_URL);
 
         debug('Initializing Dribbble Login, cb: %s', cbURL);
@@ -329,7 +336,12 @@ var sendResponse = function (ctx, err, config) {
             return ctx.done('bad credentials');
         }
         else {
-            ctx.done(err, {path: sessionData.path, id: sessionData.id, uid: sessionData.uid});
+            var session = {path: sessionData.path, id: sessionData.id, uid: sessionData.uid};
+            config.sessionDataKeys.split(',').forEach(function (v) {
+                if (v.startsWith('-')) delete session[v.substr(1)];
+                else if (sessionData[v]) session[v] = sessionData[v];
+            });
+            ctx.done(err, session);
         }
     }
 };
@@ -396,7 +408,7 @@ AuthResource.prototype.handle = function (ctx, next) {
             }
             break;
         case 'google-idtoken':
-            if(this.config.allowGoogleIdToken) {
+            if (this.config.allowGoogleIdToken) {
                 requestedModule = 'google-idtoken';
                 options.scope = this.config.googleScope || 'profile email';
             }
@@ -436,7 +448,8 @@ AuthResource.prototype.handle = function (ctx, next) {
         }
 
         this.initPassport();
-        this.passport.authenticate(requestedModule, options, function (err, user, info) {
+        this.passport.authenticate(requestedModule, options, function (err,
+                user, info) {
             var userCollection = getUserCollectionInstance(config.usersCollection);
             var domain = userCollection.domain;
 
@@ -519,6 +532,10 @@ AuthResource.basicDashboard = {
             type: 'checkbox',
             description: 'Disable appending the success/error to your URL. This is for the times you have a framework like AngularJS that controls your routing. You can access the user from the Users Collection\'s "/me".'
         }, {
+            name: 'sessionDataKeys',
+            type: 'text',
+            description: 'A comma-separated list of keys in the session data to send on successful login when a redirectUrl is not specified. Keys `id`, `path` and `uid` are sent by default. Use dash (-) with any of them to remove them from the sent data e.g. -id,token'
+        }, {
             name: 'allowLocal',
             type: 'checkbox',
             description: 'Allow users to login via Username + Password'
@@ -539,9 +556,9 @@ AuthResource.basicDashboard = {
             type: 'checkbox',
             description: 'Allow users to login via Google'
         }, {
-            name        : 'allowGoogleIdToken',
-            type        : 'checkbox',
-            description : 'Allow users to login via Google Id using the auth SDKs for smart phones (does not use website redirection)'
+            name: 'allowGoogleIdToken',
+            type: 'checkbox',
+            description: 'Allow users to login via Google Id using the auth SDKs for smart phones (does not use website redirection)'
         }, {
             name: 'allowDribbble',
             type: 'checkbox',
