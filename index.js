@@ -449,7 +449,7 @@ AuthResource.prototype.handle = function (ctx, next) {
             }
         }
 
-        this.initPassport();
+        this.initPassport(requestedModule);
         this.passport.authenticate(requestedModule, options, function (err,
                 user, info) {
             var userCollection = getUserCollectionInstance(config.usersCollection);
